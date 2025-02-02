@@ -156,5 +156,5 @@ def processar_parquet():
 import os
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port, debug=True)
+    port = int(os.environ.get("PORT", 5000))  # Aqui, se a variável de ambiente "PORT" não estiver presente, usará a porta 5000
+    app.run(host="0.0.0.0", port=port, debug=True)  # Fazendo a aplicação rodar na porta definida

@@ -9,4 +9,5 @@ EXPOSE 5000
 #CMD ["python", "app.py"]
 
 #xomando para iniciar o Gunicorn (adicionei isto para a API funcionar no render(?)) - atualizar tambem o ficheiro requirements
-CMD ["gunicorn", "-b", "0.0.0.0:$PORT", "app:app"]
+#CMD ["gunicorn", "-b", "0.0.0.0:$PORT", "app:app"]
+CMD ["sh", "-c", "gunicorn -b 0.0.0.0:${PORT:-5000} app:app"]
