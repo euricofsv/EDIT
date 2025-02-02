@@ -1,5 +1,5 @@
 FROM python:3.9-slim
-WORKDIR /Projeto1/app
+WORKDIR /app
 COPY Projeto1/requirements.txt .
 #COPY requirements.txt .
 RUN pip install -r requirements.txt
