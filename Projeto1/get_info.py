@@ -12,3 +12,6 @@ print(df.info())
 
 print(df.describe())
 
+import os
+
+print("PORT:", os.getenv("PORT"))
