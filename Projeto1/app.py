@@ -8,27 +8,27 @@ import io
 
 app = Flask(__name__)
 
-# Rota para a página inicial com o formulário de upload
+#Rota para a página inicial com o formulário de upload
 @app.route("/")
 def home():
     return render_template("Index.html")
 
-# Rota para processar o arquivo Parquet
+#Rota para processar o arquivo Parquet
 @app.route("/processar_parquet", methods=["POST"])
 def processar_parquet():
-    # Verifica se o arquivo foi enviado
+    #Verifica se o arquivo foi enviado
     if "file" not in request.files:
         return "Nenhum arquivo enviado", 400
 
     file = request.files["file"]
 
-    # Ler o arquivo Parquet
+    #Ler o arquivo Parquet
     try:
         df = pd.read_parquet(file)
     except Exception as e:
         return f"Erro ao ler o arquivo Parquet: {str(e)}", 400
 
-    # Corrigir erro do datetime
+    #Corrigir erro do datetime
     df["PurchaseDate"] = pd.to_datetime(df["PurchaseDate"], errors="coerce")
 
     #corrigir nulos e numeros
@@ -63,7 +63,7 @@ def processar_parquet():
     df["TotalPrice"] = df["TotalPrice"].round(2)
     df["PricePerUnit"] = df["PricePerUnit"].round(2)
 
-    # KPIs
+    #KPIs
     receita_total = df["TotalPrice"].sum()
     media_vendas = df["TotalPrice"].mean()
     total_transacoes = df["TransactionID"].nunique()
@@ -84,7 +84,7 @@ def processar_parquet():
     vendas_diarias = df.groupby(df["PurchaseDate"].dt.date)["TotalPrice"].sum()
     clientes_unicos = df["CustomerID"].nunique()
 
-    # Dicionário de KPIs
+    #Dicionário de KPIs
     resultados = {
         "KPI": [
             "Receita Total",
@@ -106,30 +106,30 @@ def processar_parquet():
         ]
     }
 
-    # KPIs para DataFrame
+    #KPIs para DataFrame
     df_resultados = pd.DataFrame(resultados)
 
-    # Vendas por categoria
+    #Vendas por categoria
     vendas_por_categoria_df = vendas_por_categoria.reset_index()
     vendas_por_categoria_df.columns = ['Categoria', 'Vendas']
 
-    # Vendas por categoria e região
+    #Vendas por categoria e região
     vendas_por_categoria_regiao_df = vendas_por_categoria_regiao.reset_index()
     vendas_por_categoria_regiao_df.columns = ['Categoria', 'Região', 'Vendas']
 
-    # Top 5 produtos
+    #Top 5 produtos
     top_produtos_df = top_produtos.reset_index()
     top_produtos_df.columns = ['ID', 'Regiao', 'Produto', 'Quantidade Vendida (TOP 5)']
 
-    # Vendas por método de pagamento
+    #Vendas por método de pagamento
     vendas_por_metodo_pagamento_df = vendas_por_metodo_pagamento.reset_index()
     vendas_por_metodo_pagamento_df.columns = ['Método de Pagamento', 'Vendas']
 
-    # Vendas diárias
+    #Vendas diárias
     vendas_diarias_df = vendas_diarias.reset_index()
     vendas_diarias_df.columns = ['Data', 'Vendas Diárias']
 
-    # Criar um arquivo Excel em memória
+    #Criar um arquivo Excel em memória
     output = io.BytesIO()
     with pd.ExcelWriter(output, engine="openpyxl") as writer:
         df_resultados.to_excel(writer, sheet_name="KPIS", index=False)
@@ -139,7 +139,7 @@ def processar_parquet():
         top_produtos_df.to_excel(writer, sheet_name="Top Produtos", index=False)
         vendas_por_metodo_pagamento_df.to_excel(writer, sheet_name="Vendas por Método de Pagamento", index=False)
 
-    # Retornar o arquivo Excel como resposta
+    #Retornar o arquivo Excel como resposta
     output.seek(0)
     return send_file(
         output,
@@ -148,13 +148,14 @@ def processar_parquet():
         download_name=f"KPIs_{datetime.now().strftime('%Y%m%d')}.xlsx"
     )
 
-# Executar a aplicação
-#if __name__ == "__main__":
-    #app.run(debug=True)
+#Executar a aplicação
+if __name__ == "__main__":
+    app.run(debug=True)
 
 #colocar este pedaço de codigo para funcionar no render
-import os
+#import os
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))  # Aqui, se a variável de ambiente "PORT" não estiver presente, usará a porta 5000
-    app.run(host="0.0.0.0", port=port, debug=True)  # Fazendo a aplicação rodar na porta definida
+    import os
+    port = int(os.environ.get("PORT", 5000))  # Usa a porta definida pelo Render ou 5000 como fallback
+    app.run(host="0.0.0.0", port=port, debug=False)  # Desative o debug em produção
